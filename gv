@@ -1,0 +1,67 @@
+digraph G {
+	edge [color=black];
+	graph[center=1];
+	node[];
+
+	subgraph PJ {
+		node[shape=box,color=green, group=3];
+		PJNOSTATE [label=NOSTATE];
+		QUEUEDPOOLED;
+		SETTINGUP;
+		PROCESSING;
+		PROCESSCOMPLETE;
+	}
+	subgraph clusterSTS {
+		color=blue;
+		label="STS";
+		subgraph STSTransport {
+			node[shape=diamond,color=red,weight=10, group=2];
+			"RELAY-IN" -> "PA-STAGE";
+			"PA-STAGE" -> "XY-STAGE";
+			"XY-STAGE" -> "RELAY-OUT";
+			//"RELAY-OUT";
+		}
+		subgraph STSProcessing {
+			node[shape=ellipse,color=blue,weight=10, group=1];
+			STSSTARTNOSTATE [label=NOSTATE, rank=1];
+			NEEDPROCESSING;
+			node[shape=ellipse,color=gray,weight=10, group=1];
+			INPROCESS;
+			PROCESSED;
+			STSENDNOSTATE [label=NOSTATE, rank=1];
+		}
+		subgraph STSProcessingEvent {
+			node[shape=circle, fixedsize=true, color=pink,fontsize=8,group=1, width=0.25];
+			E90_NOSTATEtoNEEDPROCESSING;
+			E90_NEEDPROCESSINGtoINPROCESS;
+			E90_INPROCESStoPROCESSED;
+			E90_PROCESSEDtoNOSTATE;
+		}
+		STSSTARTNOSTATE->E90_NOSTATEtoNEEDPROCESSING->NEEDPROCESSING;
+		NEEDPROCESSING->E90_NEEDPROCESSINGtoINPROCESS->INPROCESS;
+		INPROCESS->E90_INPROCESStoPROCESSED->PROCESSED;
+		PROCESSED->E90_PROCESSEDtoNOSTATE->STSENDNOSTATE;
+		{rank=same; INPROCESS; "XY-STAGE"}
+		{rank=same; E90_NEEDPROCESSINGtoINPROCESS; "RELAY-IN"}
+		edge[style=dashed,dir=none,weight=0];
+		E90_NEEDPROCESSINGtoINPROCESS->E90_INPROCESStoPROCESSED;
+	}
+/*
+	subgraph client_server {
+		edge[style=dotted,dir=none,weight=100];
+		NOSTATE->"RELAY-IN";
+		SETTINGUP->"PA-STAGE";
+		PROCESSING->"XY-STAGE";
+	}
+	subgraph trail {
+		edge[style=dashed,dir=none];
+		NOSTATE->"RELAY-IN";
+		NEEDPROCESSING->"PA-STAGE";
+	}
+	subgraph bindingConnection {
+		edge[style=bold,weight=50];
+		INPROCESS->"PA-STAGE";
+		PROCESSING->"XY-STAGE";
+	}
+*/
+}
