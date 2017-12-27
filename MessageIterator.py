@@ -222,20 +222,30 @@ if __name__ == '__main__':
                 val.setdefault(item_depth, []).append(d["value"])
 
 
-    f.close()
+        format = S16F11_format
+        ret = ""
+#         print d["readable_depth"]
+        for index in d["readable_depth"][1:]:
+            if not format:   # {}
+                break
+            ret = format.get(index)
+            if isinstance(ret, dict):
+                format = ret
+            elif ret is None:
+                ret = format.get(-1)
+                if ret is None:
+                    print "not found"
+                    break
+                elif isinstance(ret, dict):
+                    format = ret
+                else:
+                    break
+            else:
+                break
+
+        print ret, d["value"]
 
     print val
-#     digest_val_depth_dict = {}
-#
-#     for d in S16F11_digest_value_target:
-#         if isinstance(d, tuple):
-#             d[0]
-#
-#     depth = [1, 3, 1, 6, 1]
-#
-#     rptid = [3, -1, 1]
-#
-#     name = S6F11_format[3][-1][2][-1]
-#     print name
+    f.close()
 
 
