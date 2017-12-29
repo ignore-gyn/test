@@ -238,6 +238,7 @@ class S6F11(DigestGenerator):
                     self.digest["value"] += " | %s" % str(item["value"])
 
         print self.digest["detail"][-1], item["readable_depth"]
+#         print self.digest["detail"][-1], depth
 
     def get_digest(self):
         return self.digest

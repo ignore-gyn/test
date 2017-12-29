@@ -17,6 +17,7 @@ class Timer(object):
     def exit(self):
         diff = (datetime.datetime.now() - self.start).microseconds / 1000
         print("time: %dms" % diff)
+        self.start = None
 
 class Dummy(object):
     def __init__(self):
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     # 7a98fes = c
 
     for x in xrange(10):
-        ### 4-1    470ms
+        ### 4-1    470ms, joinを切ると435くらい
         timer.enter()
         for times in xrange(100000):
             value = ""
@@ -73,7 +74,8 @@ if __name__ == '__main__':
             output_dict.setdefault("7a98fes", []).append("c")
 
             for v in output_value_list:
-                value += '%s: %s, ' % (v, ' | '.join(output_dict[v]))
+#                 value += '%s: %s, ' % (v, ' | '.join(output_dict[v]))
+                value += '%s: %s, ' % (v, output_dict[v][0])
 
         print "idea4-1: "
         timer.exit()

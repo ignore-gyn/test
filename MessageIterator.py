@@ -65,6 +65,7 @@ class LogParser(object):
 #                 print line.ljust(40, ' ') + " # depth=" + str(readable_depth)
 #                 digest["detail"] += line + '\n'
 #                 msg.notify_end_list(item)
+                yield None
                 continue
 
 #             msg.notify_item(item)
@@ -212,16 +213,20 @@ if __name__ == '__main__':
     f = open("./data/text1.txt")
     digest = log_parser.parse_msg(f)
 
+    current_index = 1
+    current_item = S16F11_format[1]
+
     for d in digest:
 #         print d["readable_depth"], d["type"]
         if d["value"] is None:
             continue
 
+        # a. 辞書に登録されたアイテムと一致するかチェックする方法
         for item_depth in val_depth_dict:
             if compare_depth_tree(val_depth_dict[item_depth], d["readable_depth"]):
                 val.setdefault(item_depth, []).append(d["value"])
 
-
+        # b. 毎アイテムごとにアイテム名を取得する方法
         format = S16F11_format
         ret = ""
 #         print d["readable_depth"]
@@ -243,7 +248,9 @@ if __name__ == '__main__':
             else:
                 break
 
-        print ret, d["value"]
+#         print ret, d["value"]
+
+        print current_item
 
     print val
     f.close()
