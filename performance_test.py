@@ -15,8 +15,8 @@ class Timer(object):
     def enter(self):
         self.start = datetime.datetime.now()
     def exit(self):
-        diff = (datetime.datetime.now() - self.start).microseconds / 1000
-        print("time: %dms" % diff)
+        diff = datetime.datetime.now() - self.start
+        print("time: %s" % str(diff))
         self.start = None
 
 class Dummy(object):
