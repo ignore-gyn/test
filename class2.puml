@@ -1,0 +1,130 @@
+@startuml DataListMakerClass
+caption DataListMaker
+
+'skinparam handwritten true
+skinparam shadowing false
+skinparam monochrome true
+skinparam ClassAttributeIconSize 0
+
+' class definition
+class DataListMaker <<M, violet>> {
+    + GenerateVariableList(model) : String
+    + AddECInfoToDBdiff(model) : String
+}
+
+class DBdiff {
+    ' + Init()
+    + Execute(model): String
+
+    - GetDBValues() : new_values
+    - GetParamInfos() : PID, PARAM_EDITOR, PARAM_SIZE
+    - GetECInfos() : VID, VName, Package
+}
+
+class VariableList {
+    + dict_COL_CDLM : Dictionary<String, Integer>
+    - pid_line_map : Dictionary<String, Integer>
+    - vid_line_map : Dictionary<String, Integer>
+    - m_variable_list_sheets : Dictionary<String, VariableListContents>
+
+    + Init()
+    + ModifyEC(SheetName, ParameterInfo, DBValue) : Result
+    + CreateNewEC(SheetName, ParameterInfo, DBValue, ECInfo) : Result
+    + OutputVariableLists()
+
+    ' PID+EDITOR : line num
+    - GetPIDLineMap()
+    ' VID+Package : line num
+    - GetVIDLineMap()
+
+    + GetECInfoFromCDLM(pid, kind) : ECInfo
+    + GetCellValue(String) : String
+}
+
+class VariableListContents {
+    - cellvalues : Range?
+    - cellcolor_range : Dictionary<ResultColor, Range>
+
+    + Init(VariableList)
+
+    ' If different value, change value and color
+    + UpdateCellValue(cellName, colValue) : ResultColor
+    ' Overwrite value (not change color)
+    + SetCellValue(colName, cellValue) : ResultColor
+    ' Compare value
+    + CheckCellValue(colName, cellValue) : ResultColor
+    + UpdateCellColorRange(colName, ResultColor)
+
+    + OutputVariableListSheet()
+}
+
+Enum ResultColor {
+    COLOR_WARNING
+    COLOR_NOT_UPDATED
+    COLOR_EXPECTED
+    COLOR_NEED_TO_CHECK
+}
+
+class ECCommonInfo {
+    + param_source: String
+    + param_download: String
+    + param_comment: String
+}
+
+class ECInfo {
+    + vid: String
+    + vname: String
+    + package: String
+}
+
+class ParameterInfo {
+    + pid: String
+    + param_editor: String
+    + param_size: String
+}
+
+class DBValues {
+    + path: String
+    + is_path_changed: boolean
+    + option: String
+    + is_option_changed: boolean
+    + range: String
+    + is_range_changed: boolean
+    + default: String
+    + is_default_changed: boolean
+    + unit: String
+    + is_unit_changed: boolean
+    + format: String
+    + model: String
+    + is_model_changed: boolean
+}
+
+class Result {
+    + path_result_color: ResultColor
+    + option_result_color: ResultColor
+    + range_result_color: ResultColor
+    + default_result_color: ResultColor
+    + unit_result_color: ResultColor
+    + updated_cell_list: String
+    + error_message: String
+}
+
+' class relations
+DataListMaker -down-> DBdiff
+DBdiff -right-> VariableList
+VariableList *-up- VariableListContents
+
+DBdiff -- ECInfo
+DBdiff -down- ParameterInfo
+DBdiff -down- DBValues
+DBdiff -- Result
+VariableList -- ECInfo
+VariableList -down- ParameterInfo
+VariableList -down- DBValues
+VariableList -- Result
+VariableList *-down- ECCommonInfo
+' VariableList -- Result
+
+Result *-down- ResultColor
+
+@enduml
