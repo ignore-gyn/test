@@ -3,8 +3,8 @@ import re
 ### Config ###
 ASCII_TRANS = True
 DEVID_OMIT = True
-VID_TRANS_RULE = "0:1,3:4,*:5,[10 20]:[4 5],0x0f:0x06,[0x1 0x2]:[0x3 0x4]"
-POS_TRANS_RULE = "[9 8]:[10 20],0x10:0x0f"
+VID_TRANS_RULE = "0:1,3:4,*:5,[10 20]:[4 5],0x0f:0x06,[0x01 0x2]:[0x3 0x4]"
+POS_TRANS_RULE = "[9 8]:[10 20],0x10:0x0f,[0xFF 0xAB]:[0x1 0x2]"
 
 H_vid_trans_dict = {}
 E_vid_trans_dict = {}
@@ -25,6 +25,31 @@ TYPE_F = "F"
 ### Regex ###
 input_pat = "(.+)<([A-Z124]+) (.+)>"
 
+def get_decimal_string(hexstr):
+    if hexstr[0] == "[" and hexstr[-1] == "]":
+        data = hexstr[1:-1]
+    else:
+        data = hexstr
+    
+    out = ""
+    for d in data.split(" "):
+        try:
+            if "0x" in d:
+                out += "%d " % int(d, 0)
+            else:
+                out += "%d " % int(d, 10)
+        except:
+            out = ""
+            break
+    
+    if out:
+        out = out[:-1]
+
+    if hexstr[0] == "[" and hexstr[-1] == "]":
+        out = "[" + out + "]"
+    
+    return out
+
 def conv_value(table, fmt, value):
     # A: Strip "" -> Conv -> Add ""
     # not A: If array, add "[]" -> Conv -> If array, strip "[]"
@@ -35,36 +60,26 @@ def conv_value(table, fmt, value):
         if value[0] == '"' and value[-1] == '"':
             value = value[1:-1]
     elif " " in value:
-        if fmt == TYPE_B:
-            in_hex = ""
-            for v in value.split(" "):
-                try:
-                    if "0x" in v:
-                        in_hex += "%d " % int(x, 0)
-                except:
-                    break
-            if in_hex:
-                in_hex = in_hex[:-1]
-                
         value = "[" + value + "]"
 
+    if fmt == TYPE_B:
+        hex_value = get_decimal_string(value)
 
 
     res = table.get(value)
     if not res:
-
         if fmt == TYPE_B:
             for r in hex_table:
-                try:
-                    hex_str = " ".join([int(x, 0) for x in r.split(" ")])
-                    if value == hex_str:
-                        res = hex_table[r]
-                except:
-                    pass
-                    
-        res = table.get("*")
+                if hex_value == get_decimal_string(r):
+                    res = get_decimal_string(hex_table[r])
+                    break
+        
         if not res:
-            return None
+            res = table.get("*")
+            if not res:
+                return None
+            elif fmt == TYPE_B:
+                res = get_decimal_string(res)
     
     if fmt == TYPE_A:
         return '"' + res + '"'
